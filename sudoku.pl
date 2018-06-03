@@ -112,6 +112,11 @@ solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J," "),fail.
 
 solve(X):- grille(Y),writeln("Loading..."),solver(X,Y,0).
 
+gen(0):-!.
+gen(Y):-Val is random(9)+1,I is random(10),J is random(10),modifierSolver(I,J,Val),!,Tmp is Y-1,gen(Tmp).
+gen(Y):-gen(Y).
+genererSol(X):-init(),Tmp is random(8)+1,gen(Tmp),solve(X),!.
+genererSol(X):-genererSol(X).
 %#########################################Fonction Utile#####################################################
 %modifier(I,J,Val) met la valeur val à la case I J
 %solve(X) résoud la grille stocké dans le prédicat grille() et met la solution dans X et dans le prédicat grille()
@@ -119,4 +124,4 @@ solve(X):- grille(Y),writeln("Loading..."),solver(X,Y,0).
 %reset() recharge sudoku.pl
 %afficher() affiche la grille dans le prédicat grille()
 %valideGrille() valide la grille courante
-%
+%genererSol(X) genere une solution et la met dans X
