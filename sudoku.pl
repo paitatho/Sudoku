@@ -1,13 +1,13 @@
 %C=1
-afficherGrille([],82).
+afficherGrille([],82):- !.
 afficherGrille([],C) :- mod(C,27) =:=0,!, writeln(" "),writeln("_____________________________"),Tmp is C+1,afficherGrille([],Tmp).
 afficherGrille([],C) :- mod(C,9) =:= 0,!,writeln(" ") , ! ,Tmp is C +1,afficherGrille([],Tmp).
 afficherGrille([],C) :- mod(C,3) =:= 0,!,write("      "),write(" |"),!,Tmp is C+1, afficherGrille([],Tmp).
 afficherGrille([],C) :- write(" "), !,Tmp is C +1,afficherGrille([],Tmp).
 afficherGrille([X|Y],C) :- mod(C,27) =:=0,!, write(" "),writeln(X),writeln("_____________________________"),Tmp is C+1,afficherGrille(Y,Tmp).
-afficherGrille([X|Y],C) :- mod(C,9) =:= 0,!,write(" "),writeln(X), !, Tmp is C+1, afficherGrille(Y,Tmp).
+afficherGrille([X|Y],C) :- mod(C,9) =:= 0,!,write(" "),writeln(X), Tmp is C+1, afficherGrille(Y,Tmp).
 afficherGrille([X|Y],C) :- mod(C,3) =:= 0,!,write(" "),write(X),write(" |"),!,Tmp is C+1, afficherGrille(Y,Tmp).
-afficherGrille([X|Y],C) :- C =< 81,!,  write(" "),write(X),write(" "), Tmp is C+ 1,afficherGrille(Y,Tmp).
+afficherGrille([X|Y],C) :- C =< 81, write(" "),write(X),write(" "), Tmp is C+ 1,afficherGrille(Y,Tmp).
 
 :- dynamic grille/1.
 grille([" ",4," ",1," "," "," "," "," "," "," ",3,5," "," "," ",1,9," "," "," "," "," ",6," "," ",3," "," ",7," "," ",5," "," ",8," ",8,1," "," "," ",9,6," ",9," "," ",2," "," ",7," "," ",6," "," ",9," "," "," "," "," ",8,1," "," "," ",2,4," "," "," "," "," "," "," ",4," ",9," "]).
