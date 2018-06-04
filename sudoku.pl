@@ -1,3 +1,31 @@
+%%%%%%%%%%%%%%%%%%%%%%%%supprimer les write qui ne servent à rien
+
+%#########################################Fonctions Utiles#####################################################
+%modifier(I,J,Val) met la valeur val à la case I J
+%solve(New,G) résoud la grille stockée dans G et met la solution dans X et dans le prédicat grille()
+%init() met dans le prédicat grille une grille vide
+%reset() recharge sudoku.pl
+%afficher() affiche la grille dans le prédicat grille()
+%valideGrille() valide la grille courante
+%generer(Niveau) genere une grille à compléter, Niveau correspondant au niveau de difficulté
+
+
+%------------------------------------------------------------------------------------------------------------------------------------------------------------
+%INITIALISATION
+
+:- dynamic grille/1.
+grille([" ",4," ",1," "," "," "," "," "," "," ",3,5," "," "," ",1,9," "," "," "," "," ",6," "," ",3," "," ",7," "," ",5," "," ",8," ",8,1," "," "," ",9,6," ",9," "," ",2," "," ",7," "," ",6," "," ",9," "," "," "," "," ",8,1," "," "," ",2,4," "," "," "," "," "," "," ",4," ",9," "]).
+
+%initialise la grille de Sudoku
+init():- retractall(grille(_)), assert(grille([" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "])).
+
+%charge le fichier
+reset():- retractall(grille(_)),consult('sudoku.pl').
+
+
+%------------------------------------------------------------------------------------------------------------------------------------------------------------
+%AFFICHAGE
+
 %C=1
 afficherGrille([],82):- !.
 afficherGrille([],C) :- mod(C,27) =:=0,!, writeln(" "),writeln("_____________________________"),Tmp is C+1,afficherGrille([],Tmp).
@@ -9,8 +37,11 @@ afficherGrille([X|Y],C) :- mod(C,9) =:= 0,!,write(" "),writeln(X), Tmp is C+1, a
 afficherGrille([X|Y],C) :- mod(C,3) =:= 0,!,write(" "),write(X),write(" |"),!,Tmp is C+1, afficherGrille(Y,Tmp).
 afficherGrille([X|Y],C) :- C =< 81, write(" "),write(X),write(" "), Tmp is C+ 1,afficherGrille(Y,Tmp).
 
-:- dynamic grille/1.
-grille([" ",4," ",1," "," "," "," "," "," "," ",3,5," "," "," ",1,9," "," "," "," "," ",6," "," ",3," "," ",7," "," ",5," "," ",8," ",8,1," "," "," ",9,6," ",9," "," ",2," "," ",7," "," ",6," "," ",9," "," "," "," "," ",8,1," "," "," ",2,4," "," "," "," "," "," "," ",4," ",9," "]).
+afficher():- grille(X),afficherGrille(X,1).
+
+
+%------------------------------------------------------------------------------------------------------------------------------------------------------------
+%VERIFICATION DU RESPECT DES REGLES DU SUDOKU
 
 %C = 1 %CC = 9
 valideLC([],C,CC) :- !.
@@ -55,18 +86,13 @@ trouverCarre(I,J,-1,JJ,IT,JT):-!,IT is I-2,JT is J-JJ.
 trouverCarre(I,J,3,3,IT,JT):-!,Tmp is mod(I,3)-1,Tmp2 is mod(J,3)-1,trouverCarre(I,J,Tmp,Tmp2,IT,JT).
 trouverCarre(I,J,II,JJ,IT,JT):-!,IT is I-II,JT is J-JJ.
 
+%valide un seul carré, celui où la valeur a été modifiée
 valideCarreI(X,0):-!,transfCarreLigne(Ligne,X,1,0),validTteLigne(Ligne).
-valideCarreI([X|Y],C):- Tmp is C-1,valideCarreI(Y,Tmp).
+valideCarreI([_|Y],C):- Tmp is C-1,valideCarreI(Y,Tmp).
 
 validTteLigne([]):- !.
 validTteLigne([T|Q]):- T =:= " ", validTteLigne(Q),!.
 validTteLigne([T|Q]):- valideLigne(T,Q,9), validTteLigne(Q).
-
-t(J):-grille(X),transfColonneLigne(Col,X,J,0,0),writeln(Col).
-
-valideModif(I,J):-grille(X),transfColonneLigne(Col,X,J,0,0),validTteLigne(Col),Tmp is (I-1)*9,transfLigneLigne(Lig,X,Tmp,0),validTteLigne(Lig),trouverCarre(I,J,3,3,IC,JC),Tmp1 is (IC-1)*9+(JC-1),valideCarreI(X,Tmp1).
-valideModif(I,J,X):-transfColonneLigne(Col,X,J,0,0),validTteLigne(Col),Tmp is (I-1)*9,transfLigneLigne(Lig,X,Tmp,0),validTteLigne(Lig),trouverCarre(I,J,3,3,IC,JC),Tmp1 is (IC-1)*9+(JC-1),valideCarreI(X,Tmp1).
-
 
 %C=0 %CC=1 %Fin=0
 valideCarre(Y,C,CC,9):- !.
@@ -78,26 +104,39 @@ valideCarre([X|Y],C,CC,Fin):- CC=<21,!,Tmp is CC+1,valideCarre(Y,C,Tmp,Fin). %qu
 valideCarre(Y,C,CC,Fin):- valideCarre(Y,C,1,Fin).
 
 valideGrille() :- grille(X),valideLC(X,1,9),valideCarre(X,0,1,0).
-afficher():- grille(X),afficherGrille(X,1).
+
 valideGrille(X):- valideLC(X,1,9),valideCarre(X,0,1,0).
-vc() :- grille(X),valideCarre(X,0,1,0).
-tf():- grille(X),transfCarreLigne(L,X,1,0),writeln(L).
 
 
-modif(0,[Val|Y],[X|Y],Val):-!.
+%------------------------------------------------------------------------------------------------------------------------------------------------------------
+%AJOUT DE VALEUR DANS UNE GRILLE
+
+%s'efface si la grille fournie en paramètre est pleine
+grillePleine([]).
+grillePleine([T|Q]):- T=\=" ", grillePleine(Q).
+
+%modifie la grille en remplaçant la case de coordonnées (I,J) par la valeur Val. La modification n'est pas effectuée si elle rend la grille invalide.
+modifier(I,J,Val):- Val <10,grille(X),Tmp is J-1+(I-1)*9,modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grille(X)),assert(grille(New)), afficher(). %grille non pleine
+modifier(I,J,Val):- Val <10,grille(X),Tmp is J-1+(I-1)*9,modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grille(X)),assert(grille(New)),afficher(),writeln("Bravo vous avez gagne !"),nl. %grille pleine
+modifier(_,_,_):- writeln("votre choix n'est pas valide ou ne permet pas d'obtenir une solution"),afficher().
+
+%modif(Num,New,Old,Val) : recopie la grille Old dans la grille New à l'exception de la case de numéro Num qui est remplacée par la valeur Val
+modif(0,[Val|Y],[_|Y],Val):-!.
 modif(CC,[X|Q],[X|Y],Val):- Tmp is CC-1,modif(Tmp,Q,Y,Val).
 
-modifier(I,J,Val):- Val <10,grille(X),Tmp is J-1+(I-1)*9,modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grille(X)),assert(grille(New)),afficher().
-modifier(I,J,Val):- writeln("votre choix n'est pas valide ou ne permet pas d'obtenir une solution"),afficher().
+%vérifie qu'après l'ajout d'une valeur aux coordonnées (I,J), la grille X respecte encore les règles du Sudoku
+valideModif(I,J,X):-transfColonneLigne(Col,X,J,0,0),validTteLigne(Col),Tmp is (I-1)*9,transfLigneLigne(Lig,X,Tmp,0),validTteLigne(Lig),trouverCarre(I,J,3,3,IC,JC),Tmp1 is (IC-1)*9+(JC-1),valideCarreI(X,Tmp1).
 
 
-modifierSolver(I,J,Val):- grille(X),Tmp is J+(I)*9,modif(Tmp,New,X,Val),II is I+1,JJ is J+1,valideModif(II,JJ,New),!,retract(grille(X)),assert(grille(New)).
+%------------------------------------------------------------------------------------------------------------------------------------------------------------
+%GENERATION D'UNE GRILLE
 
-init():- retractall(grille(_)), assert(grille([" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "])).
-reset():- retractall(grille(_)),consult('sudoku.pl').
+%solve(G,New) : lance le solveur sur la grille G, le nouvelle grille est retournée dans New
+solve(New,G):- writeln("Loading..."),solver(New,G,0).
 
-solver(S,[],C):-!,grille(S),afficher().
-solver(S,L,81):-!,grille(S),afficher().
+%solver(G1,G2,C) : complète la grille G2, en mettant le résultat dans G1. C est un compteur.
+solver(S,[],C):-!,grille(S).
+solver(S,L,81):-!,grille(S).
 solver(S,[T|Q],C):- T =\= " ",!,Tmp is C+1,solver(S,Q,Tmp).
 solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,1),Tmp is C+1,solver(S,Q,Tmp).
 solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,2),Tmp is C+1,solver(S,Q,Tmp).
@@ -110,18 +149,55 @@ solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,8),Tmp is C+1,sol
 solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,9),Tmp is C+1,solver(S,Q,Tmp).
 solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J," "),fail.
 
-solve(X):- grille(Y),writeln("Loading..."),solver(X,Y,0).
+%modifie la grille en remplaçant la case de coordonnées (I,J) par la valeur Val. La modification n'est pas effectuée si elle rend la grille invalide.
+modifierSolver(I,J,Val):- grille(X), Tmp is J+(I)*9, modif(Tmp,New,X,Val),II is I+1,JJ is J+1,valideModif(II,JJ,New),!,retract(grille(X)),assert(grille(New)).
 
+%gen(X) : ajoute X valeurs aléatoires dans une grille. Cette fonction permet de générer ensuite des grilles différentes à chaque fois
 gen(0):-!.
 gen(Y):-Val is random(9)+1,I is random(10),J is random(10),modifierSolver(I,J,Val),!,Tmp is Y-1,gen(Tmp).
 gen(Y):-gen(Y).
-genererSol(X):-init(),Tmp is random(8)+1,gen(Tmp),solve(X),!.
+
+%genere une grille complète et la met dans X
+genererSol(X):-init(),Tmp is random(8)+1,gen(Tmp), grille(G), solve(New,G),!.
 genererSol(X):-genererSol(X).
-%#########################################Fonction Utile#####################################################
-%modifier(I,J,Val) met la valeur val à la case I J
-%solve(X) résoud la grille stocké dans le prédicat grille() et met la solution dans X et dans le prédicat grille()
-%init() met dans le prédicat grille une grille vide
-%reset() recharge sudoku.pl
-%afficher() affiche la grille dans le prédicat grille()
-%valideGrille() valide la grille courante
-%genererSol(X) genere une solution et la met dans X
+
+%ajouterTrous(Niveau) : lance la fonction de suppression aléatoire de certaines valeurs d'une grille. Le nombre de cases supprimées correspond au Niveau de difficulté souhaité par le joueur
+ajouterTrous(1):-ajouterTrous(51,0). 
+ajouterTrous(3):-ajouterTrous(61,0),!.
+ajouterTrous(_):-ajouterTrous(56,0). %par défaut, niveau intermédiaire
+
+%ajouterTrous(Nb,Cpt) : supprimer Nb cases d'une grille remplie. Cpt est un compteur initialisé à 0.
+ajouterTrous(Nb,Nb).
+ajouterTrous(Nb,Cpt):-  supprimerCase(),  Temp is Cpt+1,ajouterTrous(Nb, Temp).
+
+%efface le contenu d'une case aléatoire de la grille
+supprimerCase():- trouverCaseASuppr(Num),grille(Old),Temp is Num-1,modif(Temp,New,Old," "),!,retract(grille(Old)),assert(grille(New)).
+
+%renvoit le numéro d'une case non vide choisie aléatoirement
+trouverCaseASuppr(Num):- grille(G), Num is random(81)+1, \+caseVide(G,Num,1),!.
+trouverCaseASuppr(Num):- trouverCaseASuppr(Num).
+
+%caseVide(G,Num, Cpt) : retourne vrai si la Num-ième case de la grille G contient " ". Cpt est un compteur initialisé à 1.
+caseVide([T|_],Num, Num):- T =:= " ",!.
+caseVide([_|Q],Num, Cpt):- Temp is Cpt+1, caseVide(Q,Num, Temp).
+
+
+%------------------------------------------------------------------------------------------------------------------------------------------------------------
+%GESTION DE L'INTERFACE
+
+lancer():-writeln("Choisissez le mode d'utilisation de l'application :"), 
+		writeln("- jouer (saisir l'instruction jouer().)"),
+		writeln("- fournir une grille a faire resoudre a l'IA (saisir l'instruction solve(X,GrilleAResoudre))"),nl.
+		
+jouer():-writeln("Choisissez la difficulte du jeu :"),
+		writeln("1 : facile, 30 cases pre-remplies"),
+		writeln("2 : intermediaire, 25 cases pre-remplies"),
+		writeln("3 : difficile, 20 cases pre-remplies"),
+		writeln("Saisir l'instruction : generer(Niveau). qui permet de generer une grille selon le niveau difficulte souhaite (Niveau est a remplacer par 1,2 ou 3)"),nl.
+
+%generer une grille selon le Niveau de difficulté
+generer(Niveau):-genererSol(_),ajouterTrous(Niveau),afficher(),
+				writeln("Pour remplir une case , saisir l'instruction : modifier(I,J,Val) avec I representant la ligne, J la colonne et Val la valeur à inserer"),nl.
+
+
+
