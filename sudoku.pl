@@ -123,10 +123,14 @@ valideGrille(X):- valideLC(X,1,9),valideCarre(X,0,1,0).
 grillePleine([]).
 grillePleine([T|Q]):- T=\=" ", grillePleine(Q).
 
+verifModif(Num,1):-grilleDepart(Dep),\+caseVide(Dep,Num,1),!,fail.
+verifModif(Num,0):-grilleDepart(Dep),\+caseVide(Dep,Num,1),!, writeln("la valeur que vous voulez modifier appartient à la grille de départ"),fail.
+verifModif(Num,Bool).
+
 %modifie la grille en remplaçant la case de coordonnées (I,J) par la valeur Val. La modification n''est pas effectuée si elle rend la grille invalide.
-modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(). %grille non pleine
-modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),nl. %grille pleine
-modifier(_,_,_):- writeln("votre choix n'est pas valide ou ne permet pas d'obtenir une solution"),afficherCourante().
+modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(). %grille non pleine
+modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,0),modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),nl. %grille pleine
+modifier(_,_,_):- writeln("votre choix n'est pas valide "),afficherCourante().
 
 %modif(Num,New,Old,Val) : recopie la grille Old dans la grille New à l'exception de la case de numéro Num qui est remplacée par la valeur Val
 modif(0,[Val|Y],[_|Y],Val):-!.
