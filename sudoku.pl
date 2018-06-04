@@ -130,24 +130,39 @@ valideGrille(X):- valideLC(X,1,9),valideCarre(X,0,1,0).
 %------------------------------------------------------------------------------------------------------------------------------------------------------------
 %AJOUT DE VALEUR DANS UNE GRILLE
 
+%retourne dans X la valeur de la case numéro CC
+caseGrille(X,[X|Y],0):-!.
+caseGrille(X,[T|Q],CC):-Tmp is CC -1,caseGrille(X,Q,Tmp).
+
 %s''efface si la grille fournie en paramètre est pleine
 grillePleine([]).
 grillePleine([T|Q]):- T=\=" ", grillePleine(Q).
 
+%verifie si la valeur modifier n''est pas une valeur qui est dans la grille de départ
 verifModif(Num,1):-grilleDepart(Dep),\+caseVide(Dep,Num,1),!,fail.
 verifModif(Num,0):-grilleDepart(Dep),\+caseVide(Dep,Num,1),!, writeln("Impossible : la valeur que vous voulez modifier appartient a la grille de depart"),fail.
 verifModif(Num,Bool).
+
+%verifie si la valeur modifier correspond avec la solution
+verifSol(Num,Val,1):- solution(Sol),caseGrille(X,Sol,Num),X=\=Val,!,fail.
+verifSol(Num,Val,0):- solution(Sol),caseGrille(X,Sol,Num),X=\=Val,!,writeln("Impossible : la valeur que vous vous mettre ne correspond pas à la solution"),fail.
+verifSol(Num,Val,Bool).
 
 %modifie la grille en remplaçant la case de coordonnées (I,J) par la valeur Val. La modification n''est pas effectuée si elle rend la grille invalide.
 modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(),modifier(). %grille non pleine
 modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,0),modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),lancer(). %grille pleine
 modifier(_,_,_):- writeln("Votre choix n'est pas valide"), afficherCourante(),modifier().
 
-%modif(Num,New,Old,Val) : recopie la grille Old dans la grille New à l'exception de la case de numéro Num qui est remplacée par la valeur Val
+%empeche de modifier une valeur si elle n''aboutira pas à la solution (modification guidé)
+modifierAide(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),verifSol(Tmp,Val,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(),modifier(). %grille non pleine
+modifierAide(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,0),verifSol(Tmp,Val,0),modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),lancer(). %grille pleine
+modifierAide(_,_,_):- writeln("Votre choix n'est pas valide"), afficherCourante(),modifier().
+
+%modif(Num,New,Old,Val) : recopie la grille Old dans la grille New à l''exception de la case de numéro Num qui est remplacée par la valeur Val
 modif(0,[Val|Y],[_|Y],Val):-!.
 modif(CC,[X|Q],[X|Y],Val):- Tmp is CC-1,modif(Tmp,Q,Y,Val).
 
-%vérifie qu'après l'ajout d'une valeur aux coordonnées (I,J), la grille X respecte encore les règles du Sudoku
+%vérifie qu''après l'ajout d'une valeur aux coordonnées (I,J), la grille X respecte encore les règles du Sudoku
 valideModif(I,J,X):-transfColonneLigne(Col,X,J,0,0),validTteLigne(Col),Tmp is (I-1)*9,transfLigneLigne(Lig,X,Tmp,0),validTteLigne(Lig),trouverCarre(I,J,3,3,IC,JC),Tmp1 is (IC-1)*9+(JC-1),valideCarreI(X,Tmp1).
 
 
@@ -212,7 +227,7 @@ lancer():-nl,writeln("Choisissez le mode d'utilisation de l'application :"),
 		writeln("1 : jouer"),
 		writeln("2 : fournir une grille que l'IA doit resoudre"),nl,
 		read(Mode), jouer(Mode).
-		
+
 jouer(1):-nl,writeln("Choisissez la difficulte du jeu :"),
 		writeln("1 : facile, 30 cases pre-remplies"),
 		writeln("2 : intermediaire, 25 cases pre-remplies"),
@@ -226,8 +241,8 @@ jouer(_):-write("Mauvaise saisie..."),lancer().
 %generer une grille selon le Niveau de difficulté
 generer(Niveau):-genererSol(X), updateSolution(X),ajouterTrous(Niveau),grilleCourante(Y),updateGrilleDepart(Y),afficherCourante(),
 				writeln("Pour remplir une case, saisir :"), modifier().
-				
+
 modifier():- write("- ligne "),read(I), nl, I=\=(-1),
-			write("- colonne "),read(J),nl, 
+			write("- colonne "),read(J),nl,
 			write("- valeur "),read(Val),nl, modifier(I,J,Val),!.
 modifier():- grilleCourante(G), solve(_,G),afficherCourante(),lancer().
