@@ -3,7 +3,7 @@
 %#########################################Fonctions Utiles#####################################################
 %modifier(I,J,Val) met la valeur val à la case I J
 %solve(New,G) résoud la grille stockée dans G et met la solution dans X et dans le prédicat grille()
-%init() met dans le prédicat grille une grille vide
+%initCourante() met dans le prédicat grille une grille vide
 %reset() recharge sudoku.pl
 %afficher() affiche la grille dans le prédicat grille()
 %valideGrille() valide la grille courante
@@ -23,10 +23,21 @@ solution([]).
 grilleDepart([]).
 
 %initialise la grille de Sudoku
-init():- retractall(grilleCourante(_)), assert(grilleCourante([" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "])).
+initCourante():- retractall(grilleCourante(_)), assert(grilleCourante([" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "])).
+initDepart():- retractall(grilleDepart(_)), assert(grilleDepart([" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "])).
+initSolution():- retractall(solution(_)), assert(solution([" "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "," "])).
+
 
 %charge le fichier
 reset():- retractall(grilleCourante(_)),retractall(solution(_)),retractall(grilleDepart(_)),consult('sudoku.pl').
+
+
+%---------------------------------------------------------------------------------------------------------------------------------------------------------------
+%GESTION MEMOIRE DYNAMIQUE
+
+updateGrilleCourante(X):-retractall(grilleCourante(_)), assert(grilleCourante(X)).
+updateSolution(X):- retractall(solution(_)), assert(solution(X)).
+updateGrilleDepart(X):- retractall(grilleDepart(_)),assert(grilleDepart(X)).
 
 
 %------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -46,6 +57,7 @@ afficherGrille([X|Y],C) :- C =< 81, write(" "),write(X),write(" "), Tmp is C+ 1,
 afficherDepart():-grilleDepart(X),afficherGrille(X,1).
 afficherSolution():-solution(X),afficherGrille(X,1).
 afficherCourante():-grilleCourante(X),afficherGrille(X,1).
+
 
 %------------------------------------------------------------------------------------------------------------------------------------------------------------
 %VERIFICATION DU RESPECT DES REGLES DU SUDOKU
@@ -119,18 +131,17 @@ valideGrille(X):- valideLC(X,1,9),valideCarre(X,0,1,0).
 %AJOUT DE VALEUR DANS UNE GRILLE
 
 %s''efface si la grille fournie en paramètre est pleine
-
 grillePleine([]).
 grillePleine([T|Q]):- T=\=" ", grillePleine(Q).
 
 verifModif(Num,1):-grilleDepart(Dep),\+caseVide(Dep,Num,1),!,fail.
-verifModif(Num,0):-grilleDepart(Dep),\+caseVide(Dep,Num,1),!, writeln("la valeur que vous voulez modifier appartient à la grille de départ"),fail.
+verifModif(Num,0):-grilleDepart(Dep),\+caseVide(Dep,Num,1),!, writeln("Impossible : la valeur que vous voulez modifier appartient a la grille de depart"),fail.
 verifModif(Num,Bool).
 
 %modifie la grille en remplaçant la case de coordonnées (I,J) par la valeur Val. La modification n''est pas effectuée si elle rend la grille invalide.
-modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(). %grille non pleine
-modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,0),modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),nl. %grille pleine
-modifier(_,_,_):- writeln("votre choix n'est pas valide "),afficherCourante().
+modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(),modifier(). %grille non pleine
+modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,0),modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),lancer(). %grille pleine
+modifier(_,_,_):- writeln("Votre choix n'est pas valide"), afficherCourante(),modifier().
 
 %modif(Num,New,Old,Val) : recopie la grille Old dans la grille New à l'exception de la case de numéro Num qui est remplacée par la valeur Val
 modif(0,[Val|Y],[_|Y],Val):-!.
@@ -170,7 +181,7 @@ gen(Y):-Val is random(9)+1,I is random(10),J is random(10),modifierSolver(I,J,Va
 gen(Y):-gen(Y).
 
 %genere une grille complète et la met dans X
-genererSol(X):-init(),Tmp is random(8)+1,gen(Tmp), grilleCourante(G), solve(New,G),!,grilleCourante(X).
+genererSol(X):-initCourante(),Tmp is random(8)+1,gen(Tmp), grilleCourante(G), solve(New,G),!,grilleCourante(X).
 genererSol(X):-genererSol(X).
 
 %ajouterTrous(Niveau) : lance la fonction de suppression aléatoire de certaines valeurs d''une grille. Le nombre de cases supprimées correspond au Niveau de difficulté souhaité par le joueur
@@ -185,7 +196,7 @@ ajouterTrous(Nb,Cpt):-  supprimerCase(),  Temp is Cpt+1,ajouterTrous(Nb, Temp).
 %efface le contenu d''une case aléatoire de la grille
 supprimerCase():- trouverCaseASuppr(Num),grilleCourante(Old),Temp is Num-1,modif(Temp,New,Old," "),!,retract(grilleCourante(Old)),assert(grilleCourante(New)).
 
-%renvoit le numéro d''une case non vide choisie aléatoirement
+%renvoie le numéro d''une case non vide choisie aléatoirement
 trouverCaseASuppr(Num):- grilleCourante(G), Num is random(81)+1, \+caseVide(G,Num,1),!.
 trouverCaseASuppr(Num):- trouverCaseASuppr(Num).
 
@@ -193,26 +204,30 @@ trouverCaseASuppr(Num):- trouverCaseASuppr(Num).
 caseVide([T|_],Num, Num):- T =:= " ",!.
 caseVide([_|Q],Num, Cpt):- Temp is Cpt+1, caseVide(Q,Num, Temp).
 
-%---------------------------------------------------------------------------------------------------------------------------------------------------------------
-%Gestion memoire dynamique
-
-updateGrilleCourante(X):-retractall(grilleCourante(_)), assert(grilleCourante(X)).
-updateSolution(X):- retractall(solution(_)), assert(solution(X)).
-updateGrilleDepart(X):- retractall(grilleDepart(_)),assert(grilleDepart(X)).
 
 %------------------------------------------------------------------------------------------------------------------------------------------------------------
-%GESTION DE L'I'NTERFACE
+%GESTION DE L''INTERFACE
 
-lancer():-writeln("Choisissez le mode d'utilisation de l'application :"),
-		writeln("- jouer (saisir l'instruction jouer().)"),
-		writeln("- fournir une grille a faire resoudre a l'IA (saisir l'instruction solve(X,GrilleAResoudre))"),nl.
-
-jouer():-writeln("Choisissez la difficulte du jeu :"),
+lancer():-nl,writeln("Choisissez le mode d'utilisation de l'application :"),
+		writeln("1 : jouer"),
+		writeln("2 : fournir une grille que l'IA doit resoudre"),nl,
+		read(Mode), jouer(Mode).
+		
+jouer(1):-nl,writeln("Choisissez la difficulte du jeu :"),
 		writeln("1 : facile, 30 cases pre-remplies"),
 		writeln("2 : intermediaire, 25 cases pre-remplies"),
-		writeln("3 : difficile, 20 cases pre-remplies"),
-		writeln("Saisir l'instruction : generer(Niveau). qui permet de generer une grille selon le niveau difficulte souhaite (Niveau est a remplacer par 1,2 ou 3)"),nl.
+		writeln("3 : difficile, 20 cases pre-remplies"),nl,
+		read(Niveau),generer(Niveau).
+jouer(2):-	initCourante(), initDepart(),afficherCourante(),
+			nl, writeln("Remplir la grille avec les valeurs souhaitees, saisir -1 lorsque vous voulez declencher la resolution automatique."),
+			modifier().
+jouer(_):-write("Mauvaise saisie..."),lancer().
 
 %generer une grille selon le Niveau de difficulté
 generer(Niveau):-genererSol(X), updateSolution(X),ajouterTrous(Niveau),grilleCourante(Y),updateGrilleDepart(Y),afficherCourante(),
-				writeln("Pour remplir une case , saisir l'instruction : modifier(I,J,Val) avec I representant la ligne, J la colonne et Val la valeur à inserer"),nl.
+				writeln("Pour remplir une case, saisir :"), modifier().
+				
+modifier():- write("- ligne "),read(I), nl, I=\=(-1),
+			write("- colonne "),read(J),nl, 
+			write("- valeur "),read(Val),nl, modifier(I,J,Val),!.
+modifier():- grilleCourante(G), solve(_,G),afficherCourante(),lancer().
