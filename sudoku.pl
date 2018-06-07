@@ -63,41 +63,41 @@ afficherCourante():-grilleCourante(X),afficherGrille(X,1).
 %VERIFICATION DU RESPECT DES REGLES DU SUDOKU
 
 %C = 1 %CC = 9
-valideLC([],C,CC) :- !.
-valideLC([],82,CC) :- !.
+valideLC([],_,_) :- !.
+valideLC([],82,_) :- !.
 valideLC([X|Y],C,CC) :- X=:=" ", mod(C,9) =:= 0, Tmp is CC-1, ! ,TTmp is C+1,valideLC(Y,TTmp,Tmp),!.
 valideLC([X|Y],C,CC) :- X=:=" ", TTmp is C+1,valideLC(Y,TTmp,CC),!.
 valideLC([X|Y],C,CC) :- mod(C,9) =:= 0,valideColonne(X,Y,1,CC),Tmp is CC-1, ! ,TTmp is C+1,valideLC(Y,TTmp,Tmp).
 valideLC([X|Y],C,CC) :- Tmp is 9-mod(C,9), valideLigne(X,Y,Tmp),valideColonne(X,Y,1,CC), TTmp is C+1,valideLC(Y,TTmp,CC).
 
-valideLigne(V,[],C) :- !.
-valideLigne(V,Y,0) :- !.
-valideLigne(V,[X|Y],C) :- X =:= V , ! , fail.%write(V),write(" "),write(X),write(" "),write(C),writeln(" ")
-valideLigne(V,[X|Y],C) :-Tmp is C-1, valideLigne(V,Y,Tmp).
+valideLigne(_,[],_) :- !.
+valideLigne(_,_,0) :- !.
+valideLigne(V,[V|_],_) :- ! , fail.%write(V),write(" "),write(X),write(" "),write(C),writeln(" ")
+valideLigne(V,[_|Y],C) :-Tmp is C-1, valideLigne(V,Y,Tmp).
 
-valideColonne(V,[],C,CC) :- !.
-valideColonne(V,Y,C,0) :- !.
-valideColonne(V,[X|Y],C,CC) :- mod(C,9) =\= 0, Tmp is C+1, ! ,valideColonne(V,Y,Tmp,CC).
-valideColonne(V,[X|Y],C,CC) :- X =:= V , ! , fail.%write(V),write(" "),write(X),write(" "),write(CC),writeln(" "),
-valideColonne(V,[X|Y],C,CC) :- Tmp is C+1,TTmp is CC-1, valideColonne(V,Y,Tmp,TTmp).
+valideColonne(_,[],_,_) :- !.
+valideColonne(_,_,_,0) :- !.
+valideColonne(V,[_|Y],C,CC) :- mod(C,9) =\= 0, Tmp is C+1, ! ,valideColonne(V,Y,Tmp,CC).
+valideColonne(V,[V|_],_,_) :- ! , fail.%write(V),write(" "),write(X),write(" "),write(CC),writeln(" "),
+valideColonne(V,[_|Y],C,CC) :- Tmp is C+1,TTmp is CC-1, valideColonne(V,Y,Tmp,TTmp).
 
 %C = 1 %CC= 0
-transfCarreLigne(Q,Y,C,3):- !.
-transfCarreLigne(Q,[],C,CC):-!.
-transfCarreLigne(Q,[X|Y],C,CC):- C=:=9,Tmp is CC +1,!,transfCarreLigne(Q,Y,1,Tmp).
+transfCarreLigne(_,_,_,3):- !.
+transfCarreLigne(_,[],_,_):-!.
+transfCarreLigne(Q,[_|Y],C,CC):- C=:=9,Tmp is CC +1,!,transfCarreLigne(Q,Y,1,Tmp).
 transfCarreLigne([X],[X|Y],C,CC):- C=:=3,CC=:=2,!,Tmp is CC+1,transfCarreLigne(X,Y,C,Tmp).
 transfCarreLigne([X|Q],[X|Y],C,CC):- C=<3 ,!,Tmp is C+1, transfCarreLigne(Q,Y,Tmp,CC).
-transfCarreLigne(Q,[X|Y],C,CC):- C<9,Tmp is C+1,transfCarreLigne(Q,Y,Tmp,CC).
+transfCarreLigne(Q,[_|Y],C,CC):- C<9,Tmp is C+1,transfCarreLigne(Q,Y,Tmp,CC).
 
-transfColonneLigne([X],[X|Y],J,8,0):-!.
+transfColonneLigne([X],[X|_],_,8,0):-!.
 transfColonneLigne([X|Q],[X|Y],1,CC,Ok):- Ok=:=0,!,Tmp is CC+1,transfColonneLigne(Q,Y,1,Tmp,1).
-transfColonneLigne(Q,[X|Y],1,CC,Ok):- Ok<9,!,Tmp is Ok+1,transfColonneLigne(Q,Y,1,CC,Tmp).
+transfColonneLigne(Q,[_|Y],1,CC,Ok):- Ok<9,!,Tmp is Ok+1,transfColonneLigne(Q,Y,1,CC,Tmp).
 transfColonneLigne(Q,Y,1,CC,Ok):- Ok=:=9,!,transfColonneLigne(Q,Y,1,CC,0).
-transfColonneLigne(Q,[X|Y],J,CC,Ok):- Tmp is J-1,!,transfColonneLigne(Q,Y,Tmp,CC,Ok).
+transfColonneLigne(Q,[_|Y],J,CC,Ok):- Tmp is J-1,!,transfColonneLigne(Q,Y,Tmp,CC,Ok).
 
-transfLigneLigne([X],[X|Y],0,8):-!.
+transfLigneLigne([X],[X|_],0,8):-!.
 transfLigneLigne([X|Q],[X|Y],0,C):-Tmp is C+1,!,transfLigneLigne(Q,Y,0,Tmp).
-transfLigneLigne(S,[X|Y],I,C):- Tmp is I-1,!,transfLigneLigne(S,Y,Tmp,C).
+transfLigneLigne(S,[_|Y],I,C):- Tmp is I-1,!,transfLigneLigne(S,Y,Tmp,C).
 
 trouverCarre(I,J,-1,-1,IT,JT):-!,IT is I-2,JT is J-2.
 trouverCarre(I,J,II,-1,IT,JT):-!,IT is I-II,JT is J-2.
@@ -114,13 +114,13 @@ validTteLigne([T|Q]):- T =:= " ", validTteLigne(Q),!.
 validTteLigne([T|Q]):- valideLigne(T,Q,9), validTteLigne(Q).
 
 %C=0 %CC=1 %Fin=0
-valideCarre(Y,C,CC,9):- !.
-valideCarre([],C,CC,Fin):- !.
+valideCarre(_,_,_,9):- !.
+valideCarre([],_,_,_):- !.
 valideCarre(Y,C,CC,Fin):- C=:=0,CC=<3,!,transfCarreLigne(Ligne,Y,1,0),validTteLigne(Ligne),Tmp3 is C+1,Tmp is Fin+1,Tmp2 is CC+1,valideCarre(Y,Tmp3,Tmp2,Tmp). %test le premier carre
-valideCarre([X|Y],C,CC,Fin):- C=<3,CC=<3,!,Tmp is C+1,valideCarre(Y,Tmp,CC,Fin). %+3 pour aller au carré suivant
-valideCarre(Y,C,CC,Fin):- C=:=4,!,valideCarre(Y,0,CC,Fin).  %test carre suivant en mettant C à 0
-valideCarre([X|Y],C,CC,Fin):- CC=<21,!,Tmp is CC+1,valideCarre(Y,C,Tmp,Fin). %quand on a fait 3 carré d une ligne on en saute 2 pour aller aux autres carrés
-valideCarre(Y,C,CC,Fin):- valideCarre(Y,C,1,Fin).
+valideCarre([_|Y],C,CC,Fin):- C=<3,CC=<3,!,Tmp is C+1,valideCarre(Y,Tmp,CC,Fin). %+3 pour aller au carré suivant
+valideCarre(Y,4,CC,Fin):- !,valideCarre(Y,0,CC,Fin).  %test carre suivant en mettant C à 0
+valideCarre([_|Y],C,CC,Fin):- CC=<21,!,Tmp is CC+1,valideCarre(Y,C,Tmp,Fin). %quand on a fait 3 carré d une ligne on en saute 2 pour aller aux autres carrés
+valideCarre(Y,C,_,Fin):- valideCarre(Y,C,1,Fin).
 
 valideGrille() :- grilleCourante(X),valideLC(X,1,9),valideCarre(X,0,1,0).
 
@@ -131,8 +131,8 @@ valideGrille(X):- valideLC(X,1,9),valideCarre(X,0,1,0).
 %AJOUT DE VALEUR DANS UNE GRILLE
 
 %retourne dans X la valeur de la case numéro CC
-caseGrille(X,[X|Y],0):-!.
-caseGrille(X,[T|Q],CC):-Tmp is CC -1,caseGrille(X,Q,Tmp).
+caseGrille(X,[X|_],0):-!.
+caseGrille(X,[_|Q],CC):-Tmp is CC -1,caseGrille(X,Q,Tmp).
 
 %s''efface si la grille fournie en paramètre est pleine
 grillePleine([]).
@@ -141,12 +141,12 @@ grillePleine([T|Q]):- T=\=" ", grillePleine(Q).
 %verifie si la valeur modifier n''est pas une valeur qui est dans la grille de départ
 verifModif(Num,1):-grilleDepart(Dep),\+caseVide(Dep,Num,1),!,fail.
 verifModif(Num,0):-grilleDepart(Dep),\+caseVide(Dep,Num,1),!, writeln("Impossible : la valeur que vous voulez modifier appartient a la grille de depart"),fail.
-verifModif(Num,Bool).
+verifModif(_,_).
 
 %verifie si la valeur modifier correspond avec la solution
 verifSol(Num,Val,1):- solution(Sol),caseGrille(X,Sol,Num),X=\=Val,!,fail.
 verifSol(Num,Val,0):- solution(Sol),caseGrille(X,Sol,Num),X=\=Val,!,writeln("Impossible : la valeur que vous vous mettre ne correspond pas à la solution"),fail.
-verifSol(Num,Val,Bool).
+verifSol(_,_,_).
 
 %modifie la grille en remplaçant la case de coordonnées (I,J) par la valeur Val. La modification n''est pas effectuée si elle rend la grille invalide.
 modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(),modifier(). %grille non pleine
@@ -173,19 +173,19 @@ valideModif(I,J,X):-transfColonneLigne(Col,X,J,0,0),validTteLigne(Col),Tmp is (I
 solve(New,G):- writeln("Loading..."),solver(New,G,0).
 
 %solver(G1,G2,C) : complète la grille G2, en mettant le résultat dans G1. C est un compteur.
-solver(S,[],C):-!,grilleCourante(S).
-solver(S,L,81):-!,grilleCourante(S).
+solver(S,[],_):-!,grilleCourante(S).
+solver(S,_,81):-!,grilleCourante(S).
 solver(S,[T|Q],C):- T =\= " ",!,Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,1),Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,2),Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,3),Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,4),Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,5),Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,6),Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,7),Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,8),Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,9),Tmp is C+1,solver(S,Q,Tmp).
-solver(S,[T|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J," "),fail.
+solver(S,[_|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,1),Tmp is C+1,solver(S,Q,Tmp).
+solver(S,[_|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,2),Tmp is C+1,solver(S,Q,Tmp).
+solver(S,[_|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,3),Tmp is C+1,solver(S,Q,Tmp).
+solver(S,[_|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,4),Tmp is C+1,solver(S,Q,Tmp).
+solver(S,[_|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,5),Tmp is C+1,solver(S,Q,Tmp).
+solver(S,[_|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,6),Tmp is C+1,solver(S,Q,Tmp).
+solver(S,[_|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,7),Tmp is C+1,solver(S,Q,Tmp).
+solver(S,[_|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,8),Tmp is C+1,solver(S,Q,Tmp).
+solver(S,[_|Q],C):- I is C//9,J is mod(C,9),modifierSolver(I,J,9),Tmp is C+1,solver(S,Q,Tmp).
+solver(_,[_|_],C):- I is C//9,J is mod(C,9),modifierSolver(I,J," "),fail.
 
 %modifie la grille en remplaçant la case de coordonnées (I,J) par la valeur Val. La modification n''est pas effectuée si elle rend la grille invalide.
 modifierSolver(I,J,Val):- grilleCourante(X), Tmp is J+(I)*9, modif(Tmp,New,X,Val),II is I+1,JJ is J+1,valideModif(II,JJ,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)).
@@ -196,7 +196,7 @@ gen(Y):-Val is random(9)+1,I is random(10),J is random(10),modifierSolver(I,J,Va
 gen(Y):-gen(Y).
 
 %genere une grille complète et la met dans X
-genererSol(X):-initCourante(),Tmp is random(8)+1,gen(Tmp), grilleCourante(G), solve(New,G),!,grilleCourante(X).
+genererSol(X):-initCourante(),Tmp is random(8)+1,gen(Tmp), grilleCourante(G), solve(_,G),!,grilleCourante(X).
 genererSol(X):-genererSol(X).
 
 %ajouterTrous(Niveau) : lance la fonction de suppression aléatoire de certaines valeurs d''une grille. Le nombre de cases supprimées correspond au Niveau de difficulté souhaité par le joueur
