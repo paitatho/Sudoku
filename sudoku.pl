@@ -145,18 +145,18 @@ verifModif(_,_).
 
 %verifie si la valeur modifier correspond avec la solution
 verifSol(Num,Val,1):- solution(Sol),caseGrille(X,Sol,Num),X=\=Val,!,fail.
-verifSol(Num,Val,0):- solution(Sol),caseGrille(X,Sol,Num),X=\=Val,!,writeln("Impossible : la valeur que vous vous mettre ne correspond pas à la solution"),fail.
+verifSol(Num,Val,0):- solution(Sol),caseGrille(X,Sol,Num),X=\=Val,!,writeln("Impossible : la valeur que vous voulez inserer ne mene pas a la solution"),fail.
 verifSol(_,_,_).
 
 %modifie la grille en remplaçant la case de coordonnées (I,J) par la valeur Val. La modification n''est pas effectuée si elle rend la grille invalide.
-modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(),modifier(). %grille non pleine
-modifier(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,0),modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),lancer(). %grille pleine
-modifier(_,_,_):- writeln("Votre choix n'est pas valide"), afficherCourante(),modifier().
+modifier(I,J,Val):- Val <10, Val>0, grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(),modifier(1). %grille non pleine
+modifier(I,J,Val):- Val <10, Val>0, grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,0),modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),lancer(). %grille pleine
+modifier(_,_,_):- writeln("Votre choix n'est pas valide"), nl, afficherCourante(),modifier(1).
 
-%empeche de modifier une valeur si elle n''aboutira pas à la solution (modification guidé)
-modifierAide(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),verifSol(Tmp,Val,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(),modifier(). %grille non pleine
-modifierAide(I,J,Val):- Val <10,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,0),verifSol(Tmp,Val,0),modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),lancer(). %grille pleine
-modifierAide(_,_,_):- writeln("Votre choix n'est pas valide"), afficherCourante(),modifier().
+%empeche de modifier une valeur si elle n''aboutira pas à la solution (modification guidée)
+modifierAide(I,J,Val):- Val <10,Val>0,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,1),verifSol(Tmp,Val,1),modif(Tmp,New,X,Val),valideModif(I,J,New),\+grillePleine(New),!,retract(grilleCourante(X)),assert(grilleCourante(New)), afficherCourante(),modifier(2). %grille non pleine
+modifierAide(I,J,Val):- Val <10,Val>0,grilleCourante(X),Tmp is J-1+(I-1)*9,Num is J+(I-1)*9,verifModif(Num,0),verifSol(Tmp,Val,0),modif(Tmp,New,X,Val),valideModif(I,J,New),!,retract(grilleCourante(X)),assert(grilleCourante(New)),afficherCourante(),writeln("Bravo vous avez gagne !"),lancer(). %grille pleine
+modifierAide(_,_,_):- writeln("Votre choix n'est pas valide"),nl, afficherCourante(),modifier(2).
 
 %modif(Num,New,Old,Val) : recopie la grille Old dans la grille New à l''exception de la case de numéro Num qui est remplacée par la valeur Val
 modif(0,[Val|Y],[_|Y],Val):-!.
@@ -200,7 +200,6 @@ genererSol(X):-initCourante(),Tmp is random(8)+1,gen(Tmp), grilleCourante(G), so
 genererSol(X):-genererSol(X).
 
 %ajouterTrous(Niveau) : lance la fonction de suppression aléatoire de certaines valeurs d''une grille. Le nombre de cases supprimées correspond au Niveau de difficulté souhaité par le joueur
-ajouterTrous(1):-ajouterTrous(51,0).
 ajouterTrous(3):-ajouterTrous(61,0),!.
 ajouterTrous(_):-ajouterTrous(56,0). %par défaut, niveau intermédiaire
 
@@ -225,24 +224,46 @@ caseVide([_|Q],Num, Cpt):- Temp is Cpt+1, caseVide(Q,Num, Temp).
 
 lancer():-nl,writeln("Choisissez le mode d'utilisation de l'application :"),
 		writeln("1 : jouer"),
-		writeln("2 : fournir une grille que l'IA doit resoudre"),nl,
+		writeln("2 : fournir une grille que l'IA doit resoudre"),
+		writeln("3 : quitter"),nl,
 		read(Mode), jouer(Mode).
 
 jouer(1):-nl,writeln("Choisissez la difficulte du jeu :"),
-		writeln("1 : facile, 30 cases pre-remplies"),
+		writeln("1 : facile, 25 cases pre-remplies et l'application empeche d'inserer une valeur qui ne mene pas a la solution"),
 		writeln("2 : intermediaire, 25 cases pre-remplies"),
 		writeln("3 : difficile, 20 cases pre-remplies"),nl,
-		read(Niveau),generer(Niveau).
+		read(Niveau),generer(Niveau),!.
 jouer(2):-	initCourante(), initDepart(),afficherCourante(),
-			nl, writeln("Remplir la grille avec les valeurs souhaitees, saisir -1 lorsque vous voulez declencher la resolution automatique."),
-			modifier().
-jouer(_):-write("Mauvaise saisie..."),lancer().
+			nl, writeln("Remplir la grille avec les valeurs de votre choix, saisir -1 lorsque vous souhaitez declencher la resolution automatique."),
+			modifier(1),!.
+jouer(3):-!.
+jouer(_):-writenl("Mauvaise saisie..."),lancer().
 
-%generer une grille selon le Niveau de difficulté
+%generer une grille selon le Niveau de difficulté. Sépare le Niveau 1 des autres niveaux, car le Niveau fait appel à une aide
+generer(1):-genererSol(X), updateSolution(X),ajouterTrous(1),grilleCourante(Y),updateGrilleDepart(Y),afficherCourante(),
+				nl,writeln("Pour remplir une case, saisir la ligne, la colonne et la valeur. Saisissez -1 si vous souhaitez acceder au menu."), modifier(2),!.
 generer(Niveau):-genererSol(X), updateSolution(X),ajouterTrous(Niveau),grilleCourante(Y),updateGrilleDepart(Y),afficherCourante(),
-				writeln("Pour remplir une case, saisir :"), modifier().
+				nl,writeln("Pour remplir une case, saisir la ligne, la colonne et la valeur. Saisissez -1 si vous souhaitez acceder au menu."), modifier(1).
 
-modifier():- write("- ligne "),read(I), nl, I=\=(-1),
-			write("- colonne "),read(J),nl,
-			write("- valeur "),read(Val),nl, modifier(I,J,Val),!.
-modifier():- grilleCourante(G), solve(_,G),afficherCourante(),lancer().
+%permet à l'utilisateur d'insérer des valeurs dans les cases. S'il saisit -1, il peut accéder au menu intermédiaire
+modifier(1):- nl, write("- ligne "),read(I), nl, I=\=(-1), %si l'utilisateur saisit -1, on quitte la boucle
+			write("- colonne "),read(J),nl,J=\=(-1),
+			write("- valeur "),read(Val),nl, Val=\=(-1),modifier(I,J,Val),!.
+modifier(2):- nl, write("- ligne "),read(I), nl, I=\=(-1), %si l'utilisateur saisit -1, on quitte la boucle
+			write("- colonne "),read(J),nl,J=\=(-1),
+			write("- valeur "),read(Val),nl, Val=\=(-1),modifierAide(I,J,Val),!.
+modifier(N):- menuIntermediaire(N).
+
+%menu accessible au cours d'une partie
+menuIntermediaire(N):-nl,writeln("Vous souhaitez :"),
+			writeln("1 : reprendre"),
+			writeln("2 : lancer la resolution automatique de la grille que vous avez saisie"),
+			writeln("3 : revenir au menu principal (la partie en cours sera perdue...)"),
+			writeln("4 : quitter l'application"),nl,
+			read(Reponse), menuIntermediaire(N,Reponse).
+menuIntermediaire(N,1):-modifier(N),!.
+menuIntermediaire(_,2):-grilleCourante(G), solve(_,G),afficherCourante(),lancer(),!.
+menuIntermediaire(_,3):-lancer(),!.
+menuIntermediaire(_,4):-!.
+menuIntermediaire(N,_):-writeln("Mauvaise saisie..."),menuIntermediaire(N).
+
