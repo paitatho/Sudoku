@@ -1,14 +1,4 @@
-%%%%%%%%%%%%%%%%%%%%%%%%supprimer les write qui ne servent à rien
-
-%#########################################Fonctions Utiles#####################################################
-%modifier(I,J,Val) met la valeur val à la case I J
-%solve(New,G) résoud la grille stockée dans G et met la solution dans X et dans le prédicat grille()
-%initCourante() met dans le prédicat grille une grille vide
-%reset() recharge sudoku.pl
-%afficher() affiche la grille dans le prédicat grille()
-%valideGrille() valide la grille courante
-%generer(Niveau) genere une grille à compléter, Niveau correspondant au niveau de difficulté
-
+%Pour lancer le jeu, écrire le prédicat : lancer().
 
 %------------------------------------------------------------------------------------------------------------------------------------------------------------
 %INITIALISATION
@@ -72,13 +62,13 @@ valideLC([X|Y],C,CC) :- Tmp is 9-mod(C,9), valideLigne(X,Y,Tmp),valideColonne(X,
 
 valideLigne(_,[],_) :- !.
 valideLigne(_,_,0) :- !.
-valideLigne(V,[V|_],_) :- ! , fail.%write(V),write(" "),write(X),write(" "),write(C),writeln(" ")
+valideLigne(V,[V|_],_) :- ! , fail.
 valideLigne(V,[_|Y],C) :-Tmp is C-1, valideLigne(V,Y,Tmp).
 
 valideColonne(_,[],_,_) :- !.
 valideColonne(_,_,_,0) :- !.
 valideColonne(V,[_|Y],C,CC) :- mod(C,9) =\= 0, Tmp is C+1, ! ,valideColonne(V,Y,Tmp,CC).
-valideColonne(V,[V|_],_,_) :- ! , fail.%write(V),write(" "),write(X),write(" "),write(CC),writeln(" "),
+valideColonne(V,[V|_],_,_) :- ! , fail.
 valideColonne(V,[_|Y],C,CC) :- Tmp is C+1,TTmp is CC-1, valideColonne(V,Y,Tmp,TTmp).
 
 %C = 1 %CC= 0
@@ -196,7 +186,7 @@ gen(Y):-Val is random(9)+1,I is random(10),J is random(10),modifierSolver(I,J,Va
 gen(Y):-gen(Y).
 
 %genere une grille complète et la met dans X
-genererSol(X):-initCourante(),Tmp is random(8)+1,gen(Tmp), grilleCourante(G), solve(_,G),!,grilleCourante(X).
+genererSol(X):-initCourante(),gen(10), grilleCourante(G), solve(_,G),!,grilleCourante(X).
 genererSol(X):-genererSol(X).
 
 %ajouterTrous(Niveau) : lance la fonction de suppression aléatoire de certaines valeurs d''une grille. Le nombre de cases supprimées correspond au Niveau de difficulté souhaité par le joueur
@@ -222,12 +212,14 @@ caseVide([_|Q],Num, Cpt):- Temp is Cpt+1, caseVide(Q,Num, Temp).
 %------------------------------------------------------------------------------------------------------------------------------------------------------------
 %GESTION DE L''INTERFACE
 
+%permet de lancer le jeu. Il s''agit du prédicat d'entrée dans le programme.
 lancer():-nl,writeln("Choisissez le mode d'utilisation de l'application :"),
 		writeln("1 : jouer"),
 		writeln("2 : fournir une grille que l'IA doit resoudre"),
 		writeln("3 : quitter"),nl,
 		read(Mode), jouer(Mode).
-
+	
+	
 jouer(1):-nl,writeln("Choisissez la difficulte du jeu :"),
 		writeln("1 : facile, 25 cases pre-remplies et l'application empeche d'inserer une valeur qui ne mene pas a la solution"),
 		writeln("2 : intermediaire, 25 cases pre-remplies"),
@@ -239,13 +231,16 @@ jouer(2):-	initCourante(), initDepart(),afficherCourante(),
 jouer(3):-!.
 jouer(_):-writenl("Mauvaise saisie..."),lancer().
 
+
 %generer une grille selon le Niveau de difficulté. Sépare le Niveau 1 des autres niveaux, car le Niveau fait appel à une aide
 generer(1):-genererSol(X), updateSolution(X),ajouterTrous(1),grilleCourante(Y),updateGrilleDepart(Y),afficherCourante(),
 				nl,writeln("Pour remplir une case, saisir la ligne, la colonne et la valeur. Saisissez -1 si vous souhaitez acceder au menu."), modifier(2),!.
 generer(Niveau):-genererSol(X), updateSolution(X),ajouterTrous(Niveau),grilleCourante(Y),updateGrilleDepart(Y),afficherCourante(),
 				nl,writeln("Pour remplir une case, saisir la ligne, la colonne et la valeur. Saisissez -1 si vous souhaitez acceder au menu."), modifier(1).
 
-%permet à l'utilisateur d'insérer des valeurs dans les cases. S'il saisit -1, il peut accéder au menu intermédiaire
+				
+%permet à l'utilisateur d'insérer des valeurs dans les cases. S'il saisit -1, il peut accéder au menu intermédiaire. 
+%Le paramètre permet d'appeler soit la fonction modifier (1), soit modifierAide (2) en fonction du niveau de difficulté demandé initialement au joueur.
 modifier(1):- nl, write("- ligne "),read(I), nl, I=\=(-1), %si l'utilisateur saisit -1, on quitte la boucle
 			write("- colonne "),read(J),nl,J=\=(-1),
 			write("- valeur "),read(Val),nl, Val=\=(-1),modifier(I,J,Val),!.
@@ -254,16 +249,20 @@ modifier(2):- nl, write("- ligne "),read(I), nl, I=\=(-1), %si l'utilisateur sai
 			write("- valeur "),read(Val),nl, Val=\=(-1),modifierAide(I,J,Val),!.
 modifier(N):- menuIntermediaire(N).
 
-%menu accessible au cours d'une partie
+
+%menu accessible au cours d'une partie. Le paramètre N correspond au mode de jeu : sans aide (1) ou avec aide (2)
 menuIntermediaire(N):-nl,writeln("Vous souhaitez :"),
 			writeln("1 : reprendre"),
 			writeln("2 : lancer la resolution automatique de la grille que vous avez saisie"),
-			writeln("3 : revenir au menu principal (la partie en cours sera perdue...)"),
-			writeln("4 : quitter l'application"),nl,
+			writeln("3 : afficher la solution"),
+			writeln("4 : revenir au menu principal (la partie en cours sera perdue...)"),
+			writeln("5 : quitter l'application"),nl,
 			read(Reponse), menuIntermediaire(N,Reponse).
+
+%permet de traiter la réponse de l'utilisateur qui correspond au second paramètre. Le premier paramètre permet de conserver en mémoire le mode de jeu (sans aide ou avec aide).
 menuIntermediaire(N,1):-modifier(N),!.
 menuIntermediaire(_,2):-grilleCourante(G), solve(_,G),afficherCourante(),lancer(),!.
-menuIntermediaire(_,3):-lancer(),!.
-menuIntermediaire(_,4):-!.
+menuIntermediaire(_,3):-afficherSolution(),lancer(),!.
+menuIntermediaire(_,4):-lancer(),!.
+menuIntermediaire(_,5):-!.
 menuIntermediaire(N,_):-writeln("Mauvaise saisie..."),menuIntermediaire(N).
-
